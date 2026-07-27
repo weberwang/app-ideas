@@ -65,7 +65,7 @@ function csvCell(value: string | number): string {
 
 /** 将当前排序后的产品导出为 CSV。 */
 function exportProducts(products: MarketProduct[], query: string): void {
-  const header = ["产品", "平台", "开发者", "分类", "机会分", "动能分", "趋势", "评论变化", "需求分", "痛点分", "评论数", "评分", "价格", "最近活跃", "链接"];
+  const header = ["产品", "平台", "开发者", "分类", "机会分", "动能分", "趋势", "评论变化", "需求分", "痛点分", "评论数", "评分", "价格", "最近活跃", "产品主页", "商店链接"];
   const rows = products.map((product) => [
     product.name,
     product.source,
@@ -81,6 +81,7 @@ function exportProducts(products: MarketProduct[], query: string): void {
     product.rating?.toFixed(2) ?? "",
     product.price,
     product.updatedAt ?? product.releasedAt ?? "",
+    product.homepageUrl ?? "",
     product.url,
   ]);
   const csv = `\uFEFF${[header, ...rows].map((row) => row.map(csvCell).join(",")).join("\n")}`;
@@ -148,7 +149,7 @@ export function ProductTable({ products, query }: ProductTableProps) {
               <th>评论 / 所有者</th>
               <th>评分</th>
               <th>价格</th>
-              <th><span className="sr-only">打开</span></th>
+              <th>链接</th>
             </tr>
           </thead>
           <tbody>
@@ -175,7 +176,14 @@ export function ProductTable({ products, query }: ProductTableProps) {
                 </td>
                 <td>{product.rating === null ? "数据缺失" : product.rating.toFixed(1)}</td>
                 <td>{product.price === 0 ? "免费" : `${product.currency} ${product.price.toFixed(2)}`}</td>
-                <td><a className="external-link" href={product.url} target="_blank" rel="noreferrer" aria-label={`打开 ${product.name}`}><ArrowSquareOut size={18} /></a></td>
+                <td>
+                  <div className="product-links">
+                    {product.homepageUrl && (
+                      <a href={product.homepageUrl} target="_blank" rel="noreferrer">主页<ArrowSquareOut size={14} /></a>
+                    )}
+                    <a href={product.url} target="_blank" rel="noreferrer">商店<ArrowSquareOut size={14} /></a>
+                  </div>
+                </td>
               </tr>
             ))}
           </tbody>

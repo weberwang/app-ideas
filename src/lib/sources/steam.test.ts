@@ -14,6 +14,7 @@ describe("Steam 数据标准化", () => {
         type: "game",
         name: "Cozy Grove",
         developers: ["Spry Fox LLC"],
+        website: "https://cozygrovegame.com",
         price_overview: { currency: "USD", final: 1499 },
         genres: [{ id: "25", description: "Adventure" }],
         release_date: { coming_soon: false, date: "Apr 8, 2021" },
@@ -28,6 +29,17 @@ describe("Steam 数据标准化", () => {
     expect(product.price).toBe(14.99);
     expect(product.rating).toBe(4.5);
     expect(product.reviewCount).toBe(1000);
+    expect(product.homepageUrl).toBe("https://cozygrovegame.com/");
     expect(product.releasedAt).toBe("2021-04-08T00:00:00.000Z");
+  });
+
+  it("忽略非 HTTP 协议的产品主页", () => {
+    const product = normalizeSteamProduct(
+      { type: "app", id: 1, name: "Unsafe" },
+      { type: "game", website: "javascript:alert(1)" },
+      null,
+    );
+
+    expect(product.homepageUrl).toBeNull();
   });
 });

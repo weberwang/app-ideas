@@ -1,5 +1,5 @@
 import type { RawMarketProduct } from "@/lib/types";
-import { normalizePublicText } from "@/lib/text";
+import { normalizePublicText, normalizePublicUrl } from "@/lib/text";
 
 /** Apple Search API 返回的软件字段。 */
 interface AppleSoftwareResult {
@@ -8,6 +8,7 @@ interface AppleSoftwareResult {
   artistName: string;
   primaryGenreName?: string;
   trackViewUrl?: string;
+  sellerUrl?: string;
   artworkUrl100?: string;
   averageUserRating?: number;
   userRatingCount?: number;
@@ -50,7 +51,7 @@ async function fetchWithTimeout(url: string, timeoutMs = 8_000): Promise<Respons
 }
 
 /** 过滤 App/游戏并转换为统一产品结构。 */
-function normalizeAppleProducts(
+export function normalizeAppleProducts(
   items: AppleSoftwareResult[],
   kind: "apps" | "games",
 ): RawMarketProduct[] {
@@ -63,6 +64,7 @@ function normalizeAppleProducts(
       name: normalizePublicText(item.trackName),
       developer: normalizePublicText(item.artistName),
       category: normalizePublicText(item.primaryGenreName ?? "未知分类"),
+      homepageUrl: normalizePublicUrl(item.sellerUrl),
       url: item.trackViewUrl ?? `https://apps.apple.com/app/id${item.trackId}`,
       iconUrl: item.artworkUrl100?.replace("100x100", "200x200") ?? null,
       rating: (item.userRatingCount ?? 0) > 0 ? (item.averageUserRating ?? null) : null,

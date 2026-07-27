@@ -24,6 +24,9 @@ export interface MarketProduct {
   name: string;
   developer: string;
   category: string;
+  /** 产品独立官网；数据源未提供或地址不安全时为空。 */
+  homepageUrl: string | null;
+  /** 对应应用商店或游戏平台的产品详情页。 */
   url: string;
   iconUrl: string | null;
   rating: number | null;
@@ -90,6 +93,29 @@ export interface TrendSummary {
   series: TrendPoint[];
 }
 
+/** 关键词公开关注热度的时间序列点。 */
+export interface KeywordHeatPoint {
+  capturedAt: string;
+  views: number;
+  value: number;
+}
+
+/** 关键词公开关注热度汇总，不将百科浏览量冒充搜索量。 */
+export interface KeywordHeatSummary {
+  keyword: string;
+  status: "ready" | "unavailable" | "skipped";
+  score: number | null;
+  averageViews: number | null;
+  totalViews: number | null;
+  changeRate: number | null;
+  comparisonDate: string | null;
+  granularity: "daily" | "monthly";
+  articleTitle: string | null;
+  articleUrl: string | null;
+  series: KeywordHeatPoint[];
+  note: string;
+}
+
 /** 分析接口返回结果。 */
 export interface AnalysisResult {
   query: string;
@@ -103,6 +129,7 @@ export interface AnalysisResult {
   products: MarketProduct[];
   sourceStatuses: SourceStatus[];
   trendSummary: TrendSummary;
+  keywordHeat: KeywordHeatSummary;
   caveats: string[];
 }
 

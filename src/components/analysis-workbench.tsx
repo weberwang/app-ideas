@@ -12,6 +12,7 @@ import {
 } from "@phosphor-icons/react";
 import { FormEvent, useEffect, useState } from "react";
 import { MetricGrid } from "@/components/metric-grid";
+import { KeywordHeatPanel } from "@/components/keyword-heat-panel";
 import { ProductTable } from "@/components/product-table";
 import { TrendPanel } from "@/components/trend-panel";
 import type { AnalysisPeriod, AnalysisResult, MarketSource } from "@/lib/types";
@@ -255,6 +256,7 @@ export function AnalysisWorkbench() {
               <div className="sample-meta"><strong>{result.metrics.sampleSize}</strong><span>时间段内活跃样本</span></div>
             </section>
             <MetricGrid metrics={result.metrics} />
+            <KeywordHeatPanel summary={result.keywordHeat} />
             <TrendPanel summary={result.trendSummary} period={result.period} />
             <div className="source-statuses">
               {result.sourceStatuses.map((status) => (

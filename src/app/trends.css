@@ -155,6 +155,135 @@
 .trend-stable { color: var(--text-muted); }
 .trend-new { color: var(--accent); }
 
+.keyword-heat-panel {
+  padding: 22px;
+  margin-top: 18px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  border-radius: var(--radius-panel);
+}
+
+.keyword-heat-panel.unavailable {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: var(--text-muted);
+}
+
+.keyword-heat-panel.unavailable h2,
+.keyword-heat-heading h2 {
+  margin: 0;
+  color: var(--text);
+  font-size: 18px;
+}
+
+.keyword-heat-panel.unavailable p,
+.keyword-heat-heading p {
+  margin: 5px 0 0;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.keyword-heat-heading,
+.keyword-heat-body {
+  display: flex;
+  gap: 24px;
+  justify-content: space-between;
+}
+
+.keyword-heat-heading a {
+  display: inline-flex;
+  gap: 3px;
+  align-items: center;
+  color: var(--accent);
+}
+
+.keyword-heat-score {
+  display: grid;
+  min-width: 150px;
+  text-align: right;
+}
+
+.keyword-heat-score strong {
+  color: var(--accent);
+  font-size: 42px;
+  line-height: 1;
+  letter-spacing: -0.06em;
+}
+
+.keyword-heat-score span,
+.keyword-heat-note {
+  color: var(--text-muted);
+  font-size: 11px;
+}
+
+.keyword-heat-body {
+  margin-top: 18px;
+}
+
+.keyword-heat-chart {
+  min-width: 0;
+  flex: 1;
+  border: 1px solid var(--line);
+  background: var(--surface-subtle);
+  border-radius: var(--radius-control);
+}
+
+.keyword-heat-chart svg {
+  display: block;
+  width: 100%;
+  height: 165px;
+}
+
+.heat-chart-line {
+  stroke: #7c5cff;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 3;
+}
+
+.heat-chart-dot {
+  fill: var(--surface);
+  stroke: #7c5cff;
+  stroke-width: 2;
+}
+
+.keyword-heat-stats {
+  display: grid;
+  width: 190px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-control);
+}
+
+.keyword-heat-stats > div {
+  display: grid;
+  padding: 12px 14px;
+  gap: 4px;
+}
+
+.keyword-heat-stats > div + div {
+  border-top: 1px solid var(--line);
+}
+
+.keyword-heat-stats span {
+  color: var(--text-muted);
+  font-size: 11px;
+}
+
+.keyword-heat-stats strong {
+  display: inline-flex;
+  gap: 4px;
+  align-items: center;
+  font-size: 18px;
+}
+
+.keyword-heat-stats strong.positive { color: var(--success); }
+
+.keyword-heat-note {
+  margin: 10px 0 0;
+  line-height: 1.5;
+}
+
 .product-trend {
   display: inline-flex;
   gap: 5px;
@@ -227,6 +356,15 @@ tbody tr {
   .trend-content {
     grid-template-columns: 1fr;
   }
+
+  .keyword-heat-heading,
+  .keyword-heat-body {
+    flex-direction: column;
+  }
+
+  .keyword-heat-score { text-align: left; }
+  .keyword-heat-stats { width: 100%; grid-template-columns: repeat(3, 1fr); }
+  .keyword-heat-stats > div + div { border-top: 0; border-left: 1px solid var(--line); }
 
   .trend-chart {
     min-height: 155px;

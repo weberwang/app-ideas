@@ -12,22 +12,25 @@
 
 - Apple 官方 iTunes Search API：按关键词和国家搜索 App Store 应用与游戏，获取评分、评论数、价格、分类和发布日期等字段。游戏模式会增加游戏语义并过滤非游戏结果。
 - Steam 商店公开端点：按关键词和国家获取游戏候选，并补充产品详情、价格、发布日期以及好评/差评统计。Steam 商店端点并非稳定的正式开发者契约，字段变化会通过数据源状态呈现。
+- Wikimedia Search 与 Pageviews API：把关键词映射到对应语言的 Wikipedia 词条，采集所选时间范围内的页面浏览量，作为公开关注热度代理；该指标不是搜索量，也不代表指定国家的访问量。
 
 ## 运行
 
 ```bash
-npm install
-npm run dev
+pnpm install
+pnpm dev
 ```
 
-打开 `http://localhost:3000`。
+打开 `http://localhost:3001`。开发服务器固定使用 3001 端口，避免与占用 3000 端口的其他项目冲突。
+
+本项目使用 Next.js，而不是 Vite；请勿使用 `pnpm vite` 启动。
 
 ## 验证
 
 ```bash
-npm run test
-npm run lint
-npm run build
+pnpm test
+pnpm lint
+pnpm build
 ```
 
 ## 评分边界

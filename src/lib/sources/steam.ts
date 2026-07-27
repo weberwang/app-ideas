@@ -1,6 +1,6 @@
 import { ProxyAgent, type Dispatcher } from "undici";
 import type { RawMarketProduct } from "@/lib/types";
-import { normalizePublicText } from "@/lib/text";
+import { normalizePublicText, normalizePublicUrl } from "@/lib/text";
 
 const proxyUrl = process.env.HTTPS_PROXY
   ?? process.env.https_proxy
@@ -57,6 +57,7 @@ interface SteamAppDetails {
   publishers?: string[];
   header_image?: string;
   capsule_image?: string;
+  website?: string;
   price_overview?: SteamPrice;
   genres?: Array<{ id: string; description: string }>;
   release_date?: { coming_soon: boolean; date: string };
@@ -136,6 +137,7 @@ export function normalizeSteamProduct(
     name: normalizePublicText(details.name ?? searchItem.name),
     developer: normalizePublicText(developer),
     category: normalizePublicText(details.genres?.map((genre) => genre.description).slice(0, 2).join(" / ") || "游戏"),
+    homepageUrl: normalizePublicUrl(details.website),
     url: `https://store.steampowered.com/app/${searchItem.id}`,
     iconUrl: details.capsule_image ?? details.header_image ?? searchItem.tiny_image ?? null,
     rating: reviewCount > 0 ? positive / reviewCount * 5 : null,

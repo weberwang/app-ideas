@@ -12,6 +12,7 @@ function product(overrides: Partial<RawMarketProduct> = {}): RawMarketProduct {
     name: "测试产品",
     developer: "测试开发者",
     category: "效率",
+    homepageUrl: "https://example.com/product",
     url: "https://example.com",
     iconUrl: null,
     rating: 4.2,
@@ -61,8 +62,23 @@ describe("市场评分", () => {
         newCount: 0,
         series: [],
       },
+      keywordHeat: {
+        keyword: "测试方向",
+        status: "ready",
+        score: 62,
+        averageViews: 120,
+        totalViews: 1_200,
+        changeRate: 0.1,
+        comparisonDate: "2026-07-01T00:00:00.000Z",
+        granularity: "daily",
+        articleTitle: "测试方向",
+        articleUrl: "https://zh.wikipedia.org/wiki/%E6%B5%8B%E8%AF%95%E6%96%B9%E5%90%91",
+        series: [],
+        note: "公开关注代理",
+      },
     });
     expect(result.verdict).toBe("谨慎验证");
+    expect(result.keywordHeat.score).toBe(62);
   });
 
   it("时间范围按发布或更新时间保留活跃产品", () => {

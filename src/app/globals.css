@@ -779,6 +779,28 @@ tbody tr:hover {
   color: var(--accent);
 }
 
+.product-links {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.product-links a {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 6px 8px;
+  border-radius: var(--radius-control);
+  color: var(--text-muted);
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.product-links a:hover {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
 .table-empty {
   padding: 24px;
   margin: 0;

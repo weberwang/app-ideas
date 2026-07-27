@@ -4,6 +4,7 @@ import type {
   MarketMetrics,
   MarketProduct,
   MarketSource,
+  KeywordHeatSummary,
   ProductTrend,
   RawMarketProduct,
   SourceStatus,
@@ -160,6 +161,7 @@ export function buildAnalysisResult(input: {
   products: Array<RawMarketProduct & { trend?: ProductTrend }>;
   sourceStatuses: SourceStatus[];
   trendSummary: TrendSummary;
+  keywordHeat: KeywordHeatSummary;
 }): AnalysisResult {
   const products = input.products.map(scoreProduct).sort((a, b) => b.opportunityScore - a.opportunityScore);
   const metrics = calculateMetrics(products);
@@ -180,11 +182,13 @@ export function buildAnalysisResult(input: {
     products,
     sourceStatuses: input.sourceStatuses,
     trendSummary: input.trendSummary,
+    keywordHeat: input.keywordHeat,
     caveats: [
       "机会分用于筛选方向，不代表收入预测。",
       "无关键词时使用 Apple 免费/付费榜单与 Steam 热销/新品榜单，它们代表当前榜单样本，不等同于平台全部产品。",
       "App Store 搜索结果不是完整市场榜单，关键词相关性也会影响样本范围。",
       "Steam 商店搜索与评论端点是公开可访问数据，但不是完整市场榜单，接口字段也可能调整。",
+      "关键词热度使用匹配 Wikipedia 词条的页面浏览量作为公开关注代理，不代表 Google 搜索量或指定国家的访问量。",
       "趋势来自本项目按相同条件保存的公开数据快照，首次采集不会伪造历史涨跌。",
       "公开数据缺少获客成本、留存率和真实利润，最终决策仍需用户访谈与小规模验证。",
     ],

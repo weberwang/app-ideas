@@ -1,4 +1,5 @@
 import { buildAnalysisResult } from "@/lib/scoring";
+import { collectKeywordHeat } from "@/lib/keyword-heat";
 import { loadAppleCharts, searchAppleApps } from "@/lib/sources/apple";
 import { loadSteamCharts, searchSteamGames } from "@/lib/sources/steam";
 import { filterProductsByPeriod } from "@/lib/period";
@@ -60,7 +61,11 @@ export async function analyzeMarket(input: AnalysisRequest): Promise<AnalysisRes
       : loadSteamCharts(input.country)));
   }
 
-  const runs = await Promise.all(jobs);
+  // 热度采集与平台请求相互独立，并行执行可避免额外增加完整分析等待时间。
+  const [runs, keywordHeat] = await Promise.all([
+    Promise.all(jobs),
+    collectKeywordHeat(input),
+  ]);
   const activeProducts = filterProductsByPeriod(
     runs.flatMap((run) => run.products),
     input.period,
@@ -71,5 +76,6 @@ export async function analyzeMarket(input: AnalysisRequest): Promise<AnalysisRes
     products: trends.products,
     sourceStatuses: runs.map((run) => run.status),
     trendSummary: trends.summary,
+    keywordHeat,
   });
 }

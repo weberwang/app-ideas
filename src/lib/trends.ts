@@ -13,8 +13,12 @@ import type {
 
 const snapshotDirectory = resolve(process.cwd(), "data", "market-snapshots");
 const minimumHistoryMs = 6 * 60 * 60 * 1_000;
-const snapshotIntervalMs = 60 * 60 * 1_000;
-const maxSnapshots = 400;
+// 六小时粒度与有效趋势的最小观察间隔一致，长期数据再按日压缩。
+const snapshotIntervalMs = minimumHistoryMs;
+const dayMs = 86_400_000;
+const detailedHistoryMs = 30 * dayMs;
+const retainedHistoryMs = 5 * 365 * dayMs;
+const maxSnapshots = 2_000;
 
 /** 可用于纯趋势比较的历史产品指标。 */
 export interface HistoricalProductMetrics {
@@ -24,7 +28,7 @@ export interface HistoricalProductMetrics {
 }
 
 /** 单次查询的历史快照。 */
-interface MarketSnapshot {
+export interface MarketSnapshot {
   capturedAt: string;
   products: Record<string, HistoricalProductMetrics>;
 }
@@ -60,7 +64,8 @@ function median(values: number[]): number {
 
 /** 使用查询条件哈希生成安全且稳定的快照文件名。 */
 function snapshotFile(input: TrendTrackingInput): string {
-  const identity = `${input.query.toLowerCase()}|${input.source}|${input.country.toUpperCase()}`;
+  // 不同观察范围包含的产品集合不同，必须隔离快照以免跨范围比较污染趋势。
+  const identity = `${input.query.toLowerCase()}|${input.source}|${input.country.toUpperCase()}|${input.period}`;
   const digest = createHash("sha256").update(identity).digest("hex").slice(0, 24);
   return join(snapshotDirectory, `${digest}.json`);
 }
@@ -86,20 +91,40 @@ function createSnapshot(products: RawMarketProduct[], capturedAt: string): Marke
   };
 }
 
-/** 找到最接近时间范围起点的历史快照。 */
-function selectComparison(
+/** 返回选定时间范围内按采集时间升序排列的有效快照。 */
+function snapshotsWithinPeriod(
+  snapshots: MarketSnapshot[],
+  period: AnalysisPeriod,
+  now: number,
+): MarketSnapshot[] {
+  const cutoff = period === "all" ? null : now - daysForPeriod(period) * dayMs;
+  return snapshots
+    .filter((snapshot) => {
+      const capturedAt = Date.parse(snapshot.capturedAt);
+      return Number.isFinite(capturedAt)
+        && capturedAt <= now
+        && (cutoff === null || capturedAt >= cutoff);
+    })
+    .toSorted((left, right) => Date.parse(left.capturedAt) - Date.parse(right.capturedAt));
+}
+
+/** 找到选定范围内最早且已满足最小观察间隔的历史快照。 */
+export function selectComparison(
   snapshots: MarketSnapshot[],
   period: AnalysisPeriod,
   now: number,
 ): MarketSnapshot | null {
-  const eligible = snapshots.filter((snapshot) => now - Date.parse(snapshot.capturedAt) >= minimumHistoryMs);
-  if (eligible.length === 0) return null;
-  const target = now - daysForPeriod(period) * 86_400_000;
-  return eligible.reduce((closest, snapshot) => {
-    const currentDistance = Math.abs(Date.parse(snapshot.capturedAt) - target);
-    const closestDistance = Math.abs(Date.parse(closest.capturedAt) - target);
-    return currentDistance < closestDistance ? snapshot : closest;
-  });
+  return snapshotsWithinPeriod(snapshots, period, now)
+    .find((snapshot) => now - Date.parse(snapshot.capturedAt) >= minimumHistoryMs) ?? null;
+}
+
+/** 在保留首尾的前提下均匀抽样，避免仅展示时间范围末尾的数据。 */
+export function sampleTrendSnapshots(snapshots: MarketSnapshot[], limit = 30): MarketSnapshot[] {
+  if (snapshots.length <= limit) return snapshots;
+  if (limit <= 1) return snapshots.slice(-1);
+  return Array.from({ length: limit }, (_, index) => (
+    snapshots[Math.round(index * (snapshots.length - 1) / (limit - 1))]
+  ));
 }
 
 /** 根据一组历史指标计算产品趋势，供快照流程和单元测试复用。 */
@@ -165,10 +190,32 @@ function snapshotPoint(snapshot: MarketSnapshot): TrendPoint {
   };
 }
 
-/** 原子写入快照，并限制历史文件持续增长。 */
+/** 压缩长期快照：近 30 天保留六小时粒度，更早数据每天保留一个采样点。 */
+export function compactSnapshots(snapshots: MarketSnapshot[], now = Date.now()): MarketSnapshot[] {
+  const retainedCutoff = now - retainedHistoryMs;
+  const detailedCutoff = now - detailedHistoryMs;
+  const dailySnapshots = new Map<string, MarketSnapshot>();
+  const detailedSnapshots: MarketSnapshot[] = [];
+
+  for (const snapshot of snapshots.toSorted((left, right) => Date.parse(left.capturedAt) - Date.parse(right.capturedAt))) {
+    const capturedAt = Date.parse(snapshot.capturedAt);
+    if (!Number.isFinite(capturedAt) || capturedAt < retainedCutoff || capturedAt > now) continue;
+    if (capturedAt >= detailedCutoff) {
+      detailedSnapshots.push(snapshot);
+    } else {
+      // 同一天持续覆盖可保留最接近当天结束的状态，同时把长期文件体积控制在线性范围内。
+      dailySnapshots.set(snapshot.capturedAt.slice(0, 10), snapshot);
+    }
+  }
+
+  return [...dailySnapshots.values(), ...detailedSnapshots].slice(-maxSnapshots);
+}
+
+/** 原子写入快照，并通过分层采样限制历史文件持续增长。 */
 async function saveSnapshots(filePath: string, snapshots: MarketSnapshot[]): Promise<void> {
   await mkdir(snapshotDirectory, { recursive: true });
-  const trimmed = snapshots.slice(-maxSnapshots);
+  const latestTimestamp = Date.parse(snapshots.at(-1)?.capturedAt ?? "");
+  const trimmed = compactSnapshots(snapshots, Number.isFinite(latestTimestamp) ? latestTimestamp : Date.now());
   const temporaryFile = `${filePath}.${process.pid}.${Date.now()}.tmp`;
   await writeFile(temporaryFile, `${JSON.stringify(trimmed)}\n`, "utf8");
   await rename(temporaryFile, filePath);
@@ -191,16 +238,13 @@ export async function trackProductTrends(
   }));
 
   const directions = enrichedProducts.map((product) => product.trend.direction);
-  const periodCutoff = now - daysForPeriod(input.period) * 86_400_000;
-  const visibleHistory = input.period === "all"
-    ? snapshots
-    : snapshots.filter((snapshot) => Date.parse(snapshot.capturedAt) >= periodCutoff);
+  const visibleHistory = snapshotsWithinPeriod(snapshots, input.period, now);
   const seriesSnapshots = [...visibleHistory, currentSnapshot];
   const deduplicatedSeries = seriesSnapshots.filter(
     (snapshot, index) => index === 0 || snapshot.capturedAt !== seriesSnapshots[index - 1].capturedAt,
   );
   const historyDays = comparison
-    ? clamp(Math.round((now - Date.parse(comparison.capturedAt)) / 86_400_000), 0, 10_000)
+    ? clamp(Math.round((now - Date.parse(comparison.capturedAt)) / dayMs), 0, 10_000)
     : 0;
 
   const lastSnapshot = snapshots.at(-1);
@@ -223,7 +267,7 @@ export async function trackProductTrends(
       fallingCount: directions.filter((direction) => direction === "down").length,
       stableCount: directions.filter((direction) => direction === "stable").length,
       newCount: directions.filter((direction) => direction === "new").length,
-      series: deduplicatedSeries.slice(-30).map(snapshotPoint),
+      series: sampleTrendSnapshots(deduplicatedSeries).map(snapshotPoint),
     },
   };
 }

@@ -7,9 +7,9 @@ const periodDaysMap: Record<Exclude<AnalysisPeriod, "all">, number> = {
   "365d": 365,
 };
 
-/** 返回时间范围对应天数，全部时间使用一年作为趋势对比目标。 */
-export function daysForPeriod(period: AnalysisPeriod): number {
-  return period === "all" ? 365 : periodDaysMap[period];
+/** 返回有限时间范围对应的天数。 */
+export function daysForPeriod(period: Exclude<AnalysisPeriod, "all">): number {
+  return periodDaysMap[period];
 }
 
 /** 判断日期是否在指定观察窗口内。 */
