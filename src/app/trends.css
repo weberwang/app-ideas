@@ -1,0 +1,238 @@
+.trend-panel {
+  padding: 22px;
+  margin-top: 18px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  border-radius: var(--radius-panel);
+}
+
+.trend-heading {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.trend-heading h2 {
+  margin: 0;
+  font-size: 18px;
+  letter-spacing: -0.02em;
+}
+
+.trend-heading p {
+  margin: 5px 0 0;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.trend-status {
+  display: inline-flex;
+  padding: 7px 9px;
+  gap: 6px;
+  align-items: center;
+  border: 1px solid var(--line);
+  background: var(--surface-subtle);
+  border-radius: var(--radius-control);
+  color: var(--text-muted);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.trend-status.ready {
+  border-color: #bdd8ca;
+  background: #effaf4;
+  color: var(--success);
+}
+
+.trend-content {
+  display: grid;
+  margin-top: 20px;
+  grid-template-columns: minmax(0, 1fr) 190px;
+  gap: 24px;
+}
+
+.trend-chart {
+  display: grid;
+  min-height: 185px;
+  place-items: center;
+  border: 1px solid var(--line);
+  background: var(--surface-subtle);
+  border-radius: var(--radius-control);
+}
+
+.trend-chart svg {
+  display: block;
+  width: 100%;
+  height: 185px;
+  overflow: visible;
+}
+
+.chart-grid-line {
+  stroke: var(--line);
+  stroke-width: 1;
+}
+
+.chart-line {
+  stroke: var(--accent);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 3;
+}
+
+.chart-dot {
+  fill: var(--surface);
+  stroke: var(--accent);
+  stroke-width: 3;
+}
+
+.chart-label {
+  fill: var(--text-muted);
+  font-size: 11px;
+}
+
+.trend-baseline {
+  display: grid;
+  max-width: 440px;
+  padding: 24px;
+  gap: 7px;
+  place-items: center;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.trend-baseline svg {
+  width: 28px;
+  height: 28px;
+  color: var(--accent);
+}
+
+.trend-baseline strong {
+  color: var(--text);
+  font-size: 15px;
+}
+
+.trend-baseline span {
+  line-height: 1.6;
+}
+
+.trend-stats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-control);
+}
+
+.trend-stats > div {
+  display: grid;
+  min-width: 0;
+  padding: 15px;
+  grid-template-columns: auto 1fr;
+  gap: 5px 7px;
+  align-items: center;
+}
+
+.trend-stats > div:nth-child(even) {
+  border-left: 1px solid var(--line);
+}
+
+.trend-stats > div:nth-child(n + 3) {
+  border-top: 1px solid var(--line);
+}
+
+.trend-stats span {
+  color: var(--text-muted);
+  font-size: 11px;
+}
+
+.trend-stats strong {
+  grid-column: 1 / -1;
+  font-size: 24px;
+  letter-spacing: -0.04em;
+}
+
+.trend-up { color: var(--success); }
+.trend-down { color: var(--danger); }
+.trend-stable { color: var(--text-muted); }
+.trend-new { color: var(--accent); }
+
+.product-trend {
+  display: inline-flex;
+  gap: 5px;
+  align-items: center;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.product-trend.up { color: var(--success); }
+.product-trend.down { color: var(--danger); }
+.product-trend.new { color: var(--accent); }
+
+.active-date {
+  display: block;
+  margin-top: 3px;
+  color: var(--text-muted);
+  font-size: 10px;
+}
+
+.metric-grid {
+  grid-template-columns: repeat(6, 1fr);
+}
+
+.search-row {
+  grid-template-columns: minmax(280px, 1fr) 112px 124px 128px;
+}
+
+tbody tr {
+  content-visibility: auto;
+  contain-intrinsic-size: 0 66px;
+}
+
+@media (max-width: 1180px) {
+  .metric-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .metric-item:nth-child(4) {
+    border-left: 0;
+  }
+
+  .metric-item:nth-child(n + 4) {
+    border-top: 1px solid var(--line);
+  }
+
+  .search-row {
+    grid-template-columns: minmax(220px, 1fr) 104px 116px;
+  }
+
+  .search-row .primary-button {
+    grid-column: 2 / -1;
+  }
+}
+
+@media (max-width: 760px) {
+  .search-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .search-input,
+  .search-row .primary-button {
+    grid-column: 1 / -1;
+  }
+
+  .trend-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .trend-content {
+    grid-template-columns: 1fr;
+  }
+
+  .trend-chart {
+    min-height: 155px;
+  }
+
+  .trend-chart svg {
+    height: 155px;
+  }
+}
